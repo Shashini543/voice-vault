@@ -1,0 +1,22 @@
+# Frontend
+voice-vault-frontend/node_modules/
+voice-vault-frontend/.next/
+voice-vault-frontend/out/
+
+# Backend
+voice-vault-backend/venv/
+voice-vault-backend/__pycache__/
+voice-vault-backend/*.pyc
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
