@@ -7,6 +7,7 @@ import { registerSchema, type RegisterFormValues } from "@/lib/validations/auth"
 import { useAuth } from "@/hooks/useAuth";
 import { Label } from "@/components/ui/Label";
 import { Input } from "@/components/ui/Input";
+import { PasswordInput } from "@/components/ui/PasswordInput";
 import { Button } from "@/components/ui/Button";
 import { GoogleButton } from "./GoogleButton";
 import { OrDivider } from "./OrDivider";
@@ -46,15 +47,14 @@ export function RegisterForm() {
 
         <div>
           <Label htmlFor="password" className="text-slate-300 light:text-slate-700">Password</Label>
-          <Input id="password" type="password" variant="dashboard" placeholder="Min. 8 characters" {...register("password")} />
+          <PasswordInput id="password" variant="dashboard" placeholder="Min. 8 characters" {...register("password")} />
           {errors.password && <p className="mt-1 text-xs text-red-400 light:text-red-600">{errors.password.message}</p>}
         </div>
 
         <div>
           <Label htmlFor="confirmPassword" className="text-slate-300 light:text-slate-700">Confirm Password</Label>
-          <Input
+          <PasswordInput
             id="confirmPassword"
-            type="password"
             variant="dashboard"
             placeholder="Repeat password"
             {...register("confirmPassword")}

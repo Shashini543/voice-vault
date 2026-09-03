@@ -7,6 +7,7 @@ import { loginSchema, type LoginFormValues } from "@/lib/validations/auth";
 import { useAuth } from "@/hooks/useAuth";
 import { Label } from "@/components/ui/Label";
 import { Input } from "@/components/ui/Input";
+import { PasswordInput } from "@/components/ui/PasswordInput";
 import { Button } from "@/components/ui/Button";
 import { GoogleButton } from "./GoogleButton";
 import { OrDivider } from "./OrDivider";
@@ -45,7 +46,7 @@ export function LoginForm() {
               Forgot password?
             </button>
           </div>
-          <Input id="password" type="password" variant="dashboard" placeholder="••••••••" {...register("password")} />
+          <PasswordInput id="password" variant="dashboard" placeholder="••••••••" {...register("password")} />
           {errors.password && <p className="mt-1 text-xs text-red-400 light:text-red-600">{errors.password.message}</p>}
         </div>
 
