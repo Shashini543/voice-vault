@@ -21,7 +21,9 @@ class Note(Base):
     source_file_name: Mapped[str] = mapped_column(String(500), nullable=False)
     category: Mapped[str] = mapped_column(String(255), nullable=False, default="General")
     status: Mapped[str] = mapped_column(String(20), nullable=False, default="PROCESSING")
+    study_notes: Mapped[str | None] = mapped_column(Text, nullable=True)
     script: Mapped[str | None] = mapped_column(Text, nullable=True)
+    processing_error: Mapped[str | None] = mapped_column(Text, nullable=True)
     s3_key: Mapped[str] = mapped_column(String(1000), nullable=False)
     audio_id: Mapped[uuid.UUID | None] = mapped_column(
         UUID(as_uuid=True),
