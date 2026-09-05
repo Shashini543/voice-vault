@@ -13,7 +13,9 @@ export interface Note {
   sourceFileName: string;
   category: string;
   status: NoteStatus;
+  studyNotes: string | null;
   script: string | null;
+  processingError: string | null;
   audioId: string | null;
   durationSeconds: number | null;
   createdAt: string;

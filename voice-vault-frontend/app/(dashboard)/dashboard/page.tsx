@@ -27,7 +27,7 @@ export default function DashboardPage() {
   const isLoading = notesResource.status === "loading" || audioResource.status === "loading";
   const hasError = notesResource.status === "error" || audioResource.status === "error";
 
-  const totalListeningSeconds = audioTracks.reduce((sum, track) => sum + track.durationSeconds, 0);
+  const totalListeningSeconds = audioTracks.reduce((sum, track) => sum + (track.durationSeconds ?? 0), 0);
   const processingCount = notes.filter((note) => note.status === NOTE_STATUS.PROCESSING).length;
 
   const recentNotes = [...notes]

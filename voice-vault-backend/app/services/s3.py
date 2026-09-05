@@ -38,3 +38,17 @@ def delete_file(key: str) -> None:
 
 def build_object_url(key: str) -> str:
     return f"https://{AWS_S3_BUCKET}.s3.{AWS_REGION}.amazonaws.com/{key}"
+
+
+def generate_presigned_url(key: str, download_filename: str, expires_in: int = 300) -> str:
+    """Short-lived, owner-only download link. The bucket itself stays private —
+    this is the "secure backend mechanism" instead of a public S3 URL."""
+    return _s3_client.generate_presigned_url(
+        "get_object",
+        Params={
+            "Bucket": AWS_S3_BUCKET,
+            "Key": key,
+            "ResponseContentDisposition": f'attachment; filename="{_sanitize_filename(download_filename)}"',
+        },
+        ExpiresIn=expires_in,
+    )

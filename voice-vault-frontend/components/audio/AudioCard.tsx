@@ -27,7 +27,9 @@ export function AudioCard({ audio }: { audio: AudioTrack }) {
           <p className="mt-1 truncate text-sm text-slate-400 light:text-slate-500">From: {audio.sourceFileName}</p>
 
           <div className="mt-4 flex flex-1 items-end justify-between">
-            <span className="text-sm text-slate-400 light:text-slate-500">{formatDuration(audio.durationSeconds)}</span>
+            <span className="text-sm text-slate-400 light:text-slate-500">
+              {audio.durationSeconds != null ? formatDuration(audio.durationSeconds) : "—"}
+            </span>
             <span className="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-500">
               ▸ Play
             </span>

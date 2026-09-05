@@ -12,6 +12,7 @@ class NoteOut(CamelModel):
     status: str
     study_notes: str | None
     script: str | None
+    processing_error: str | None
     audio_id: uuid.UUID | None
     duration_seconds: int | None
     created_at: datetime

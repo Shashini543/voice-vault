@@ -40,5 +40,5 @@ export function useAsyncResource<T>(fetcher: () => Promise<T>, deps: unknown[]) 
       });
   }
 
-  return { data, status, error, retry };
+  return { data, status, error, retry, mutate: setData };
 }

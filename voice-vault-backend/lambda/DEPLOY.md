@@ -1,29 +1,14 @@
 # Deploying voice-vault-document-processor as a container image
 
-Run these yourself from `voice-vault-backend/` (build context matters — the Dockerfile
-`COPY`s `app/` from one level above `lambda/`). Replace `<...>` placeholders. Nothing
-here touches your `.env` values except reading `DATABASE_URL` to set as a Lambda
-env var — do that from your own terminal so it never appears in any log I can see.
+Run these yourself from `voice-vault-backend/`. The function already exists as a
+container image (from the earlier delete+recreate), so this is a rebuild-and-update,
+not a recreate. Replace `<...>` placeholders.
 
-## 0. Capture what the existing function has, before deleting it
+## 1. Get a Gemini API key (one-time, if you don't have one yet)
 
-Package type is fixed at creation, so getting to a container image means delete +
-recreate with the same name. Grab the execution role ARN first — you'll need it to
-recreate the function with the same permissions (S3 read / CloudWatch / Bedrock):
-
-```powershell
-aws lambda get-function --function-name voice-vault-document-processor `
-  --query "Configuration.Role" --output text
-```
-
-Save that ARN. Also note the account id and region you're already using:
-`079740174907`, `us-east-1` (from your S3 bucket name).
-
-## 1. Create an ECR repository (one-time)
-
-```powershell
-aws ecr create-repository --repository-name voice-vault-document-processor --region us-east-1
-```
+Create one at https://aistudio.google.com/apikey, then add it to your local `.env`
+as `GEMINI_API_KEY=...` so local testing can use it too. Never paste the value
+anywhere I can see it — this file only tells you the variable name to set.
 
 ## 2. Build and push the image
 
@@ -43,47 +28,33 @@ docker push 079740174907.dkr.ecr.us-east-1.amazonaws.com/voice-vault-document-pr
 time; Docker layer caching makes later rebuilds much faster as long as the
 Dockerfile's early layers don't change.)
 
-## 3. Delete and recreate the function
+## 3. Point the function at the new image
 
 ```powershell
-aws lambda delete-function --function-name voice-vault-document-processor
-
-aws lambda create-function `
+aws lambda update-function-code `
   --function-name voice-vault-document-processor `
-  --package-type Image `
-  --code ImageUri=079740174907.dkr.ecr.us-east-1.amazonaws.com/voice-vault-document-processor:latest `
-  --role <EXECUTION_ROLE_ARN_FROM_STEP_0> `
-  --timeout 300 `
-  --memory-size 1536 `
-  --environment "Variables={DATABASE_URL=<YOUR_DATABASE_URL>}"
+  --image-uri 079740174907.dkr.ecr.us-east-1.amazonaws.com/voice-vault-document-processor:latest
 ```
 
-Use the exact `DATABASE_URL` value from your `.env` — pasted directly into your own
-terminal, not shared with me.
+## 4. Add GEMINI_API_KEY to the function's environment variables
 
-## 4. Re-grant S3 permission to invoke the function
-
-This does **not** survive delete+recreate and must be redone or every S3 trigger
-will fail with AccessDenied:
+This **replaces** the whole `Variables` map, so include `DATABASE_URL` again too —
+don't drop it:
 
 ```powershell
-aws lambda add-permission `
+aws lambda update-function-configuration `
   --function-name voice-vault-document-processor `
-  --statement-id s3-invoke `
-  --action lambda:InvokeFunction `
-  --principal s3.amazonaws.com `
-  --source-arn arn:aws:s3:::voice-vault-shashini-2026-079740174907-us-east-1-an `
-  --source-account 079740174907
+  --environment "Variables={DATABASE_URL=<YOUR_DATABASE_URL>,GEMINI_API_KEY=<YOUR_GEMINI_API_KEY>}"
 ```
 
-## 5. Re-check the S3 → Lambda trigger
+Paste both values directly into your own terminal from your own `.env` — I never see them.
 
-In the S3 console → your bucket → Properties → Event notifications, confirm the
-`notes/` prefix trigger still lists `voice-vault-document-processor` as the
-destination (the ARN is stable across a same-name recreate, so this is usually
-already fine — just worth a look after step 3).
+The Lambda's execution role still has `bedrock:InvokeModel` attached from the earlier
+setup; that's now unused but harmless, and untouched per "don't change AWS config"
+beyond what's explicitly needed here. No IAM changes are required for Gemini — it's
+called over plain HTTPS with the API key, not an AWS-permission-gated call.
 
-## 6. Smoke test
+## 5. Smoke test
 
 Upload a `.txt` file through the app (Upload page, or `POST /notes/upload`), then:
 

@@ -1,10 +1,17 @@
+export type AudioStatus = "PROCESSING" | "READY" | "FAILED";
+
 export interface AudioTrack {
   id: string;
   noteId: string;
   title: string;
-  url: string;
-  durationSeconds: number;
+  status: AudioStatus;
+  errorMessage: string | null;
+  durationSeconds: number | null;
   category: string;
   sourceFileName: string;
   createdAt: string;
+}
+
+export interface AudioDownload {
+  url: string;
 }

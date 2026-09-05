@@ -20,7 +20,7 @@ import type { Note } from "@/types";
 type SortOrder = "date" | "name";
 
 export default function NotesPage() {
-  const { data: notes, status, error, retry } = useAsyncResource<Note[]>(getNotes, []);
+  const { data: notes, status, error, retry, mutate } = useAsyncResource<Note[]>(getNotes, []);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<NoteFilter>("all");
   const [sort, setSort] = useState<SortOrder>("date");
@@ -99,7 +99,11 @@ export default function NotesPage() {
       {status === "ready" && visibleNotes.length > 0 && (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {visibleNotes.map((note) => (
-            <NoteCard key={note.id} note={note} />
+            <NoteCard
+              key={note.id}
+              note={note}
+              onDeleted={(id) => mutate((prev) => (prev ?? []).filter((n) => n.id !== id))}
+            />
           ))}
         </div>
       )}

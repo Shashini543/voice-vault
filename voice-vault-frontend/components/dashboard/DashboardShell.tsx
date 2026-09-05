@@ -4,6 +4,7 @@ import { useState } from "react";
 import type { ReactNode } from "react";
 import { Sidebar, MobileSidebarClose } from "./Sidebar";
 import { Topbar } from "./Topbar";
+import { Toast } from "@/components/common/Toast";
 
 export function DashboardShell({ children }: { children: ReactNode }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -30,6 +31,8 @@ export function DashboardShell({ children }: { children: ReactNode }) {
         </div>
         <main className="flex-1 px-4 py-8 sm:px-6 lg:px-8">{children}</main>
       </div>
+
+      <Toast />
     </div>
   );
 }
