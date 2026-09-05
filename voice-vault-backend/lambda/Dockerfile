@@ -46,6 +46,25 @@ RUN mkdir -p /opt/tesseract/share/tessdata \
 
 FROM public.ecr.aws/lambda/python:3.13
 
+# The builder stage links tesseract/leptonica (compiled C++, with gcc/g++)
+# against these libraries via the -devel/build packages, but only
+# /opt/tesseract is copied into this stage — the actual runtime .so files
+# (installed by dnf under /usr/lib64, not under /opt/tesseract) never made it
+# into the final image. That's why tesseract failed at run time with
+# "error while loading shared libraries: libpng16.so.16" (and, once that was
+# fixed, the next missing one: libgomp.so.1 — gcc's OpenMP runtime) for ANY
+# OCR call (uploaded images and scanned-PDF page rendering both hit this)
+# while digital PDFs with a native text layer never invoke tesseract at all
+# and were unaffected. Installing the full set of plain (non-devel) runtime
+# packages here — no compilation needed, unlike tesseract/leptonica itself —
+# fixes it in one pass instead of discovering each missing .so one at a time:
+# libgomp/libstdc++/libgcc cover tesseract/leptonica's own C++/OpenMP runtime,
+# the rest cover the image formats leptonica reads.
+RUN dnf install -y \
+        libgomp libstdc++ libgcc \
+        zlib libpng libjpeg-turbo libtiff libwebp \
+    && dnf clean all
+
 COPY --from=builder /opt/tesseract /opt/tesseract
 
 ENV PATH="/opt/tesseract/bin:${PATH}"

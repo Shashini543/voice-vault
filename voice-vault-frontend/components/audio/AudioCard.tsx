@@ -20,10 +20,7 @@ export function AudioCard({ audio }: { audio: AudioTrack }) {
         </div>
 
         <div className="flex flex-1 flex-col p-5">
-          <span className="inline-flex w-fit items-center rounded-full bg-indigo-500/10 light:bg-indigo-50 px-2.5 py-1 text-xs font-semibold text-indigo-400 light:text-indigo-600">
-            {audio.category}
-          </span>
-          <p className="mt-3 font-semibold text-white light:text-slate-900">{audio.title}</p>
+          <p className="font-semibold text-white light:text-slate-900">{audio.title}</p>
           <p className="mt-1 truncate text-sm text-slate-400 light:text-slate-500">From: {audio.sourceFileName}</p>
 
           <div className="mt-4 flex flex-1 items-end justify-between">

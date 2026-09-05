@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { FileText } from "lucide-react";
 import { LoadingSpinner } from "@/components/common/LoadingSpinner";
@@ -27,6 +27,19 @@ export default function NotesPage() {
 
   const allNotes = useMemo(() => notes ?? [], [notes]);
   const readyCount = allNotes.filter((note) => note.status === NOTE_STATUS.READY).length;
+  const hasProcessing = allNotes.some((note) => note.status === NOTE_STATUS.PROCESSING);
+
+  useEffect(() => {
+    if (!hasProcessing) return;
+
+    const interval = setInterval(() => {
+      getNotes()
+        .then((fresh) => mutate(fresh))
+        .catch(() => {});
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [hasProcessing, mutate]);
 
   const visibleNotes = useMemo(() => {
     let result = allNotes;

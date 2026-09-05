@@ -76,10 +76,7 @@ export function RegisterForm() {
         </p>
       </form>
 
-      <p className="mt-6 text-center text-xs text-slate-500 light:text-slate-400">
-        By creating an account, you agree to our <span className="underline">Terms of Service</span> and{" "}
-        <span className="underline">Privacy Policy</span>.
-      </p>
+
     </div>
   );
 }

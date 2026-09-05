@@ -1,5 +1,13 @@
 import { apiClient } from "./client";
-import type { AuthSession, LoginCredentials, RegisterCredentials, User } from "@/types";
+import type {
+  AuthSession,
+  ExportData,
+  ForgotPasswordCredentials,
+  LoginCredentials,
+  RegisterCredentials,
+  ResetPasswordCredentials,
+  User,
+} from "@/types";
 
 export async function login(credentials: LoginCredentials): Promise<AuthSession> {
   const { data } = await apiClient.post<AuthSession>("/auth/login", credentials);
@@ -22,5 +30,25 @@ export async function logout(): Promise<void> {
 
 export async function updateUser(payload: Partial<Pick<User, "name" | "email">>): Promise<User> {
   const { data } = await apiClient.patch<User>("/auth/me", payload);
+  return data;
+}
+
+export async function forgotPassword(payload: ForgotPasswordCredentials): Promise<{ message: string }> {
+  const { data } = await apiClient.post<{ message: string }>("/auth/forgot-password", payload);
+  return data;
+}
+
+export async function resetPassword(payload: ResetPasswordCredentials): Promise<{ message: string }> {
+  const { data } = await apiClient.post<{ message: string }>("/auth/reset-password", payload);
+  return data;
+}
+
+export async function exportData(): Promise<ExportData> {
+  const { data } = await apiClient.get<ExportData>("/auth/export");
+  return data;
+}
+
+export async function deleteAccount(confirmation: string): Promise<{ message: string }> {
+  const { data } = await apiClient.delete<{ message: string }>("/auth/me", { data: { confirmation } });
   return data;
 }

@@ -3,9 +3,14 @@ interface GoogleButtonProps {
 }
 
 export function GoogleButton({ label }: GoogleButtonProps) {
+  function handleClick() {
+    window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/google/login`;
+  }
+
   return (
     <button
       type="button"
+      onClick={handleClick}
       className="flex h-11 w-full items-center justify-center gap-2 rounded-lg border border-slate-700 light:border-slate-300 bg-slate-800 light:bg-white text-sm font-semibold text-slate-100 light:text-slate-700 transition-colors hover:bg-slate-700 light:hover:bg-slate-50"
     >
       <svg className="h-5 w-5" viewBox="0 0 48 48" aria-hidden>

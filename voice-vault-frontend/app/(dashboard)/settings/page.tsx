@@ -11,6 +11,7 @@ import { useThemeStore } from "@/store/themeStore";
 import { useAuth } from "@/hooks/useAuth";
 import { updateUser } from "@/lib/api/auth";
 import { getErrorMessage } from "@/lib/utils";
+import { getStoredAutoPlay, getStoredPlaybackSpeed, setStoredAutoPlay, setStoredPlaybackSpeed } from "@/lib/preferences";
 
 export default function SettingsPage() {
   const user = useAuthStore((state) => state.user);
@@ -21,12 +22,24 @@ export default function SettingsPage() {
 
   const [name, setName] = useState(user?.name ?? "");
   const [email, setEmail] = useState(user?.email ?? "");
-  const [playbackSpeed, setPlaybackSpeed] = useState("1");
-  const [autoPlay, setAutoPlay] = useState(true);
-  const [emailNotifications, setEmailNotifications] = useState(false);
+  const [playbackSpeed, setPlaybackSpeed] = useState(() => String(getStoredPlaybackSpeed()));
+  const [autoPlay, setAutoPlay] = useState(() => getStoredAutoPlay());
 
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  function handlePlaybackSpeedChange(speed: string) {
+    setPlaybackSpeed(speed);
+    setStoredPlaybackSpeed(Number(speed));
+  }
+
+  function handleToggleAutoPlay() {
+    setAutoPlay((value) => {
+      const next = !value;
+      setStoredAutoPlay(next);
+      return next;
+    });
+  }
 
   async function handleSave() {
     setIsSaving(true);
@@ -58,11 +71,9 @@ export default function SettingsPage() {
           isDarkMode={theme === "dark"}
           onToggleDarkMode={toggleTheme}
           playbackSpeed={playbackSpeed}
-          onPlaybackSpeedChange={setPlaybackSpeed}
+          onPlaybackSpeedChange={handlePlaybackSpeedChange}
           autoPlay={autoPlay}
-          onToggleAutoPlay={() => setAutoPlay((value) => !value)}
-          emailNotifications={emailNotifications}
-          onToggleEmailNotifications={() => setEmailNotifications((value) => !value)}
+          onToggleAutoPlay={handleToggleAutoPlay}
         />
 
         <AccountSection />
@@ -78,10 +89,6 @@ export default function SettingsPage() {
         >
           Sign out
         </button>
-
-        <p className="text-center text-xs text-slate-600 light:text-slate-400">
-          Voice Vault v1.0.0 · Made with <span aria-hidden>♥</span> for students
-        </p>
       </div>
     </div>
   );

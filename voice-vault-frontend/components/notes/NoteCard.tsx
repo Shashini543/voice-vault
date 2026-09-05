@@ -8,6 +8,7 @@ import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { NoteStatusBadge } from "./NoteStatusBadge";
 import { deleteNote } from "@/lib/api/notes";
 import { useToastStore } from "@/store/toastStore";
+import { useEstimatedProgress } from "@/hooks/useEstimatedProgress";
 import { ROUTES } from "@/lib/constants";
 import { NOTE_STATUS } from "@/types";
 import { formatDuration, getErrorMessage } from "@/lib/utils";
@@ -20,9 +21,11 @@ function fileTypeLabel(fileName: string): string {
 
 export function NoteCard({ note, onDeleted }: { note: Note; onDeleted?: (id: string) => void }) {
   const isReady = note.status === NOTE_STATUS.READY;
+  const isProcessing = note.status === NOTE_STATUS.PROCESSING;
   const showToast = useToastStore((state) => state.show);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const progress = useEstimatedProgress(note.createdAt, isProcessing);
 
   async function handleDelete() {
     setIsDeleting(true);
@@ -69,8 +72,7 @@ export function NoteCard({ note, onDeleted }: { note: Note; onDeleted?: (id: str
               month: "short",
               day: "numeric",
               year: "numeric",
-            })}{" "}
-            · {note.category}
+            })}
           </p>
 
           <div className="mt-4 flex flex-1 items-end justify-between border-t border-slate-800 light:border-slate-200 pt-4">
@@ -90,6 +92,18 @@ export function NoteCard({ note, onDeleted }: { note: Note; onDeleted?: (id: str
               </span>
             )}
           </div>
+
+          {isProcessing && (
+            <div className="mt-3">
+              <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-800 light:bg-slate-200">
+                <div
+                  className="h-full rounded-full bg-amber-400 light:bg-amber-500 transition-[width] duration-1000 ease-linear"
+                  style={{ width: `${progress}%` }}
+                />
+              </div>
+              <p className="mt-1 text-right text-xs text-slate-500 light:text-slate-400">{Math.round(progress)}%</p>
+            </div>
+          )}
         </Card>
       </Link>
 

@@ -8,7 +8,7 @@ from fastapi.responses import JSONResponse
 from app.config import CORS_ORIGINS
 from app.database import Base, engine
 from app import models  # noqa: F401  (registers models with Base before create_all)
-from app.routers import audio, auth, notes
+from app.routers import audio, auth, google_auth, notes
 
 
 @asynccontextmanager
@@ -51,6 +51,7 @@ async def unhandled_exception_handler(request: Request, exc: Exception) -> JSONR
 
 
 app.include_router(auth.router)
+app.include_router(google_auth.router)
 app.include_router(notes.router)
 app.include_router(audio.router)
 

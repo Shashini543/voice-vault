@@ -6,6 +6,7 @@ import { Download, FileText, Play, Trash2 } from "lucide-react";
 import { LoadingSpinner } from "@/components/common/LoadingSpinner";
 import { EmptyState } from "@/components/common/EmptyState";
 import { ErrorState } from "@/components/common/ErrorState";
+import { BackLink } from "@/components/common/BackLink";
 import { NoteStatusBadge } from "@/components/notes/NoteStatusBadge";
 import { Card } from "@/components/ui/Card";
 import { Tabs } from "@/components/ui/Tabs";
@@ -24,8 +25,8 @@ import type { AudioTrack, Note } from "@/types";
 type TabValue = "study-notes" | "script" | "audio";
 
 const TAB_ITEMS = [
-  { value: "study-notes", label: "AI Study Notes" },
-  { value: "script", label: "AI Script" },
+  { value: "study-notes", label: "Study Notes" },
+  { value: "script", label: "Script" },
   { value: "audio", label: "Audio" },
 ];
 
@@ -48,8 +49,22 @@ export default function NoteDetailPage({ params }: { params: Promise<{ id: strin
   );
   const audioResource = useAsyncResource<AudioTrack | null>(audioFetcher, [audioId]);
 
-  if (status === "loading") return <LoadingSpinner label="Loading note..." />;
-  if (status === "error") return <ErrorState description={error ?? "Failed to load note."} onRetry={retry} />;
+  if (status === "loading") {
+    return (
+      <div>
+        <BackLink href={ROUTES.notes} label="Back to My Notes" />
+        <LoadingSpinner label="Loading note..." />
+      </div>
+    );
+  }
+  if (status === "error") {
+    return (
+      <div>
+        <BackLink href={ROUTES.notes} label="Back to My Notes" />
+        <ErrorState description={error ?? "Failed to load note."} onRetry={retry} />
+      </div>
+    );
+  }
   if (!note) return null;
 
   async function handleDelete() {
@@ -74,8 +89,20 @@ export default function NoteDetailPage({ params }: { params: Promise<{ id: strin
     }
   }
 
+  function handleDownloadStudyNotes() {
+    if (!note!.studyNotes) return;
+    const blob = new Blob([note!.studyNotes], { type: "text/markdown;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `${note!.title}-study-notes.md`;
+    link.click();
+    URL.revokeObjectURL(url);
+  }
+
   return (
     <div>
+      <BackLink href={ROUTES.notes} label="Back to My Notes" />
       <div className="mb-6 rounded-xl border border-slate-800 light:border-slate-200 bg-slate-900 light:bg-white p-6">
         <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-start">
           <div className="flex items-start gap-3">
@@ -133,63 +160,71 @@ export default function NoteDetailPage({ params }: { params: Promise<{ id: strin
       <Tabs items={TAB_ITEMS} value={activeTab} onChange={(value) => setActiveTab(value as TabValue)} />
 
       <div className="mt-6">
-        {activeTab === "study-notes" && (
-          <div>
-            <h2 className="text-lg font-bold text-white light:text-slate-900">AI Study Notes</h2>
-            <p className="mt-1 mb-4 text-sm text-slate-400 light:text-slate-500">
-              Your notes transformed into clear, student-friendly study material by AI.
-            </p>
-            <Card>
-              <StatusGate note={note} content={note.studyNotes} />
-            </Card>
-          </div>
-        )}
-
-        {activeTab === "script" && (
-          <div>
-            <h2 className="text-lg font-bold text-white light:text-slate-900">AI Podcast Script</h2>
-            <p className="mt-1 mb-4 text-sm text-slate-400 light:text-slate-500">
-              Your AI study notes converted into a natural conversational script, ready to be turned into audio.
-            </p>
-            {note.script && (
-              <div className="mb-4 flex items-start gap-2 rounded-lg border border-indigo-500/20 bg-indigo-500/5 px-4 py-3 text-sm text-indigo-300 light:text-indigo-700">
-                <FileText className="mt-0.5 h-4 w-4 flex-shrink-0" />
-                Audio is generated from this conversational script.
-              </div>
+        <div className={activeTab === "study-notes" ? "" : "hidden"}>
+          <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <h2 className="text-lg font-bold text-white light:text-slate-900">AI Study Notes</h2>
+              <p className="mt-1 text-sm text-slate-400 light:text-slate-500">
+                Your notes transformed into clear, student-friendly study material by AI.
+              </p>
+            </div>
+            {note.studyNotes && (
+              <button
+                type="button"
+                onClick={handleDownloadStudyNotes}
+                className="inline-flex h-9 flex-shrink-0 items-center justify-center gap-2 rounded-lg border border-slate-700 light:border-slate-300 bg-slate-800 light:bg-white px-3 text-sm font-semibold text-slate-100 light:text-slate-700 transition-colors hover:bg-slate-700 light:hover:bg-slate-50"
+              >
+                <Download className="h-4 w-4" />
+                Download
+              </button>
             )}
-            <Card>
-              <StatusGate note={note} content={note.script} />
-            </Card>
           </div>
-        )}
+          <Card>
+            <StatusGate note={note} content={note.studyNotes} />
+          </Card>
+        </div>
 
-        {activeTab === "audio" && (
-          <div>
-            {note.audioId ? (
-              audioResource.status === "loading" ? (
-                <LoadingSpinner label="Loading audio..." />
-              ) : audioResource.status === "error" ? (
-                <ErrorState description={audioResource.error ?? "Failed to load audio."} onRetry={audioResource.retry} />
-              ) : audioResource.data?.status === "PROCESSING" ? (
-                <LoadingSpinner label="Generating audio from your study script..." />
-              ) : audioResource.data?.status === "FAILED" ? (
-                <ErrorState
-                  title="Audio generation failed"
-                  description={audioResource.data.errorMessage || "Something went wrong while generating audio."}
-                  onRetry={audioResource.retry}
-                />
-              ) : audioResource.data?.status === "READY" ? (
-                <AudioPlayer audio={audioResource.data} />
-              ) : null
-            ) : (
-              <EmptyState
-                icon={FileText}
-                title="No audio available"
-                description="This note doesn't have generated audio."
+        <div className={activeTab === "script" ? "" : "hidden"}>
+          <h2 className="text-lg font-bold text-white light:text-slate-900">AI Podcast Script</h2>
+          <p className="mt-1 mb-4 text-sm text-slate-400 light:text-slate-500">
+            Your AI study notes converted into a natural conversational script, ready to be turned into audio.
+          </p>
+          {note.script && (
+            <div className="mb-4 flex items-start gap-2 rounded-lg border border-indigo-500/20 bg-indigo-500/5 px-4 py-3 text-sm text-indigo-300 light:text-indigo-700">
+              <FileText className="mt-0.5 h-4 w-4 flex-shrink-0" />
+              Audio is generated from this conversational script.
+            </div>
+          )}
+          <Card>
+            <StatusGate note={note} content={note.script} />
+          </Card>
+        </div>
+
+        <div className={activeTab === "audio" ? "" : "hidden"}>
+          {note.audioId ? (
+            audioResource.status === "loading" ? (
+              <LoadingSpinner label="Loading audio..." />
+            ) : audioResource.status === "error" ? (
+              <ErrorState description={audioResource.error ?? "Failed to load audio."} onRetry={audioResource.retry} />
+            ) : audioResource.data?.status === "PROCESSING" ? (
+              <LoadingSpinner label="Generating audio from your study script..." />
+            ) : audioResource.data?.status === "FAILED" ? (
+              <ErrorState
+                title="Audio generation failed"
+                description={audioResource.data.errorMessage || "Something went wrong while generating audio."}
+                onRetry={audioResource.retry}
               />
-            )}
-          </div>
-        )}
+            ) : audioResource.data?.status === "READY" ? (
+              <AudioPlayer audio={audioResource.data} />
+            ) : null
+          ) : (
+            <EmptyState
+              icon={FileText}
+              title="No audio available"
+              description="This note doesn't have generated audio."
+            />
+          )}
+        </div>
       </div>
 
       <ConfirmDialog

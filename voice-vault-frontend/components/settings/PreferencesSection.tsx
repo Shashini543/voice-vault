@@ -15,8 +15,6 @@ interface PreferencesSectionProps {
   onPlaybackSpeedChange: (speed: string) => void;
   autoPlay: boolean;
   onToggleAutoPlay: () => void;
-  emailNotifications: boolean;
-  onToggleEmailNotifications: () => void;
 }
 
 export function PreferencesSection({
@@ -26,8 +24,6 @@ export function PreferencesSection({
   onPlaybackSpeedChange,
   autoPlay,
   onToggleAutoPlay,
-  emailNotifications,
-  onToggleEmailNotifications,
 }: PreferencesSectionProps) {
   return (
     <Card>
@@ -68,14 +64,6 @@ export function PreferencesSection({
             </p>
           </div>
           <Switch checked={autoPlay} onChange={onToggleAutoPlay} label="Auto-play Next Episode" />
-        </div>
-
-        <div className="flex items-center justify-between gap-4">
-          <div>
-            <p className="text-sm font-medium text-white light:text-slate-900">Email Notifications</p>
-            <p className="text-sm text-slate-400 light:text-slate-500">Get notified when your audio is ready.</p>
-          </div>
-          <Switch checked={emailNotifications} onChange={onToggleEmailNotifications} label="Email Notifications" />
         </div>
       </div>
     </Card>
